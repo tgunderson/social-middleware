@@ -107,8 +107,9 @@
       "!**/*.interface.ts",
       "!**/*.decorator.ts",
       "!**/*.spec.ts",
-      "!**/main.ts"
-  
+      "!**/main.ts",
+      "!**/dev-tools/**",
+      "!**/bull-dashboard/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

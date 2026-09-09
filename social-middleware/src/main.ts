@@ -3,12 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-//import * as mongoSanitize from 'express-mongo-sanitize';
-import { json, urlencoded } from 'express';
 import { BullDashboardService } from './bull-dashboard/bull-dashboard.service';
+
+//import * as mongoSanitize from 'express-mongo-sanitize';
 import { MongoSanitizeInterceptor } from './common/interceptors/mongo-sanitize.interceptor';
 
 async function bootstrap() {
@@ -47,6 +48,11 @@ async function bootstrap() {
     const isDevelopment = config.get<string>('NODE_ENV') !== 'production';
     const apiUrl = config.get<string>('API_URL') || 'http://localhost:3001';
     const formsUrl = config.get<string>('FORMS_URL') || 'http://localhost:8080';
+    if (isDevelopment) {
+      const bullDashboard = app.get(BullDashboardService);
+      app.use('/admin/queues', bullDashboard.getRouter());
+    }
+
     // Enable CORS to handle preflight OPTIONS requests
     const allowedOrigins = [frontendUrl, apiUrl, formsUrl];
     logger.log('CORS Configuration:');
