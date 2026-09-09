@@ -31,7 +31,6 @@ async function bootstrap() {
     const config = app.get(ConfigService);
 
     const isDevEnvironment =
-      config.get<string>('NODE_ENV') === 'dev' ||
       config.get<string>('NODE_ENV') === 'development' ||
       config.get<string>('NODE_ENV') === 'local';
 
@@ -48,10 +47,6 @@ async function bootstrap() {
     const isDevelopment = config.get<string>('NODE_ENV') !== 'production';
     const apiUrl = config.get<string>('API_URL') || 'http://localhost:3001';
     const formsUrl = config.get<string>('FORMS_URL') || 'http://localhost:8080';
-    if (isDevelopment) {
-      const bullDashboard = app.get(BullDashboardService);
-      app.use('/admin/queues', bullDashboard.getRouter());
-    }
 
     // Enable CORS to handle preflight OPTIONS requests
     const allowedOrigins = [frontendUrl, apiUrl, formsUrl];
