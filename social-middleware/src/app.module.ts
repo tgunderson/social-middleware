@@ -23,7 +23,9 @@ import { SiebelModule } from './siebel/siebel.module';
 @Module({})
 export class AppModule {
   static register(): DynamicModule {
-    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const isDevelopment = ['dev', 'development', 'local'].includes(
+      process.env.NODE_ENV ?? '',
+    );
 
     return {
       module: AppModule,

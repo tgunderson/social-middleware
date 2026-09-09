@@ -3,12 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { BullDashboardService } from './bull-dashboard/bull-dashboard.service';
+
 //import * as mongoSanitize from 'express-mongo-sanitize';
-import { json, urlencoded } from 'express';
 import { MongoSanitizeInterceptor } from './common/interceptors/mongo-sanitize.interceptor';
 
 async function bootstrap() {
@@ -29,16 +30,23 @@ async function bootstrap() {
     // load config
     const config = app.get(ConfigService);
 
+    const isDevEnvironment =
+      config.get<string>('NODE_ENV') === 'development' ||
+      config.get<string>('NODE_ENV') === 'local';
+
+    if (isDevEnvironment) {
+      const bullDashboard = app.get(BullDashboardService);
+      app.use('/admin/queues', bullDashboard.getRouter());
+      logger.log('Bull dashboard mounted at /admin/queues');
+    }
+
     const port = config.get<number>('PORT') || 3001;
     const frontendUrl =
       config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    // different development flag to control logging..
     const isDevelopment = config.get<string>('NODE_ENV') !== 'production';
     const apiUrl = config.get<string>('API_URL') || 'http://localhost:3001';
     const formsUrl = config.get<string>('FORMS_URL') || 'http://localhost:8080';
-    if (isDevelopment) {
-      const bullDashboard = app.get(BullDashboardService);
-      app.use('/admin/queues', bullDashboard.getRouter());
-    }
 
     // Enable CORS to handle preflight OPTIONS requests
     const allowedOrigins = [frontendUrl, apiUrl, formsUrl];
