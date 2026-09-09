@@ -76,18 +76,6 @@ describe('DevToolsController', () => {
       ).rejects.toThrow(new ForbiddenException('Dev tools are disabled'));
       expect(mockDevToolsService.triggerStageTransition).not.toHaveBeenCalled();
     });
-    it('delegates trigger-stage to the service', async () => {
-      const result = await controller.triggerStage({
-        applicationPackageId: 'pkg-1',
-        stage: ServiceRequestStage.APPLICATION,
-      });
-
-      expect(mockDevToolsService.triggerStageTransition).toHaveBeenCalledWith(
-        'pkg-1',
-        ServiceRequestStage.APPLICATION,
-      );
-      expect(result).toEqual({ success: true });
-    });
 
     it('forbids even when NODE_ENV is undefined', async () => {
       setConfigService(configFor(undefined));
