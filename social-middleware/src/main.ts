@@ -1,15 +1,15 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
-import * as cookieParser from 'cookie-parser';
-import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
-import { BullDashboardService } from './bull-dashboard/bull-dashboard.service';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
+import { AppModule } from './app.module';
 //import * as mongoSanitize from 'express-mongo-sanitize';
-import { MongoSanitizeInterceptor } from './common/interceptors/mongo-sanitize.interceptor';
 import { json, urlencoded } from 'express';
+import { BullDashboardService } from './bull-dashboard/bull-dashboard.service';
+import { MongoSanitizeInterceptor } from './common/interceptors/mongo-sanitize.interceptor';
 
 async function bootstrap() {
   try {
@@ -26,15 +26,24 @@ async function bootstrap() {
     app.use(urlencoded({ extended: true, limit: '10mb' }));
     app.useGlobalInterceptors(new MongoSanitizeInterceptor());
 
-    const bullDashboard = app.get(BullDashboardService);
-    app.use('/admin/queues', bullDashboard.getRouter());
-
     // load config
     const config = app.get(ConfigService);
+
+    const isDevEnvironment =
+      config.get<string>('NODE_ENV') === 'dev' ||
+      config.get<string>('NODE_ENV') === 'development' ||
+      config.get<string>('NODE_ENV') === 'local';
+
+    if (isDevEnvironment) {
+      const bullDashboard = app.get(BullDashboardService);
+      app.use('/admin/queues', bullDashboard.getRouter());
+      logger.log('Bull dashboard mounted at /admin/queues');
+    }
 
     const port = config.get<number>('PORT') || 3001;
     const frontendUrl =
       config.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+    // different development flag to control logging..
     const isDevelopment = config.get<string>('NODE_ENV') !== 'production';
     const apiUrl = config.get<string>('API_URL') || 'http://localhost:3001';
     const formsUrl = config.get<string>('FORMS_URL') || 'http://localhost:8080';
