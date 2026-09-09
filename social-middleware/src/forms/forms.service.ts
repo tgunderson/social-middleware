@@ -4,23 +4,22 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { ValidateTokenDto } from './dto/validate-token.dto';
-import { GetTokenDto } from './dto/get-token.dto';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  FormParameters,
-  FormParametersDocument,
-} from 'src/application-form/schemas/form-parameters.schema';
 import { Model } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { ApplicationFormService } from '../application-form/services/application-form.service';
 import {
   ApplicationForm,
   ApplicationFormDocument,
 } from 'src/application-form/schemas/application-form.schema';
-import { UserService } from '../auth/user.service';
+import {
+  FormParameters,
+  FormParametersDocument,
+} from 'src/application-form/schemas/form-parameters.schema';
+import { ApplicationFormService } from '../application-form/services/application-form.service';
 import { UserProfileResponse } from '../auth/interfaces/user-profile-response.interface';
+import { UserService } from '../auth/user.service';
+import { ValidateTokenDto } from './dto/validate-token.dto';
 // TODO: cleanup old tokens
 
 @Injectable()
@@ -79,46 +78,6 @@ export class FormsService {
     // Return only the formParameters field
     this.logger.info('Form Parameters', record.formParameters);
     return record.formParameters;
-  }
-
-  async getFormAccessToken(dto: GetTokenDto): Promise<any> {
-    this.logger.info('Retrieving Form Access Token');
-    const applicationFormId = dto.applicationFormId;
-    this.logger.debug('Passed applicationFormId:', applicationFormId);
-    this.logger.info(
-      'Checking whether form access token exists for applicationFormId',
-    );
-
-    try {
-      // TODO: Handle types other than 'New'
-      const formParameters = await this.formParametersModel
-        .findOne({
-          applicationFormId: applicationFormId,
-          type: 'New',
-        })
-        .exec();
-
-      if (!formParameters) {
-        throw new NotFoundException(
-          `No form parameters found for applicationFormId ${applicationFormId}`,
-        );
-      }
-
-      return { formAccessToken: formParameters.formAccessToken };
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        // Re-throw NotFoundException (from the !formParameters check)
-        throw error;
-      }
-      // Log and handle unexpected database errors
-      this.logger.error(
-        { error, applicationFormId },
-        `Error finding formAccessToken for application: ${applicationFormId}`,
-      );
-      throw new InternalServerErrorException(
-        'Failed to retrieve form access token',
-      );
-    }
   }
 
   async validateTokenAndGetSavedJson(dto: ValidateTokenDto): Promise<any> {
