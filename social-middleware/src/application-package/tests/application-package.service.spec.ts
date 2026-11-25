@@ -3269,7 +3269,7 @@ describe('ApplicationPackageService - submitTrainingCertificates', () => {
     ]);
     mockAttachments.findById.mockResolvedValue({
       attachmentId: 'att-1',
-      fileName: 'pride.pdf',
+      fileName: 'training.pdf',
       fileData: Buffer.from('file'),
       fileType: 'pdf',
     });
@@ -3338,7 +3338,7 @@ describe('ApplicationPackageService - submitTrainingCertificates', () => {
       expect(mockSiebel.createAttachment).toHaveBeenCalledWith(
         SR_ID,
         expect.objectContaining({
-          fileName: 'pride.pdf',
+          fileName: 'training.pdf',
           category: 'Resource Case',
           subCategory: 'Training Certificate',
           description: 'PRESERVICE CERTIFICATE',
@@ -3368,7 +3368,7 @@ describe('ApplicationPackageService - submitTrainingCertificates', () => {
   it('skips certificates without file content', async () => {
     mockAttachments.findById.mockResolvedValue({
       attachmentId: 'att-1',
-      fileName: 'pride.pdf',
+      fileName: 'training.pdf',
       fileData: null,
     });
 
